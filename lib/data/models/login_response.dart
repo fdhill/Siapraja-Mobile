@@ -8,7 +8,7 @@ class LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       status: json['status'] ?? false,
-      token: json['payload']?['token'], // Sesuaikan dengan struktur JSON Spring Boot Anda
+      token: json['payload']?['token'],
       message: (json['message'] as List?)?.first ?? "",
     );
   }

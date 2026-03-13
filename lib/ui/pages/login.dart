@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../controller/auth_controller.dart';
+import '../../data/models/login_response.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -14,44 +15,31 @@ class _LoginState extends State<Login> {
   final TextEditingController passwordInput = TextEditingController();
 
   void handleLogin(AuthController authController) async {
-    print("Mencoba login untuk: ${usernameInput.text}"); // Cek di console
-
     if (usernameInput.text.isEmpty || passwordInput.text.isEmpty) {
       _showFeedback(message: "Username & Password kosong!", isSuccess: false);
       return;
     }
 
-    try {
-      bool success = await authController.login(
-        usernameInput.text,
-        passwordInput.text,
-      );
+    LoginResponse result = await authController.login(
+      usernameInput.text,
+      passwordInput.text,
+    );
 
-      if (success) {
-        print("Login Berhasil!");
-        _showFeedback(
-          message: "Login Berhasil! Selamat datang ${usernameInput.text}",
-          isSuccess: true,
-        );
-        // Sesuai permintaan: Tidak ada navigasi (pindah halaman) di sini
-      } else {
-        print("Login Gagal: Response bukan 200");
-        _showFeedback(
-          message: "Login Gagal! Akun salah atau masalah server.",
-          isSuccess: false,
-        );
-      }
-    } catch (e) {
-      print("Error terdeteksi: $e");
+    if (result.status) {
       _showFeedback(
-        message: "Terjadi kesalahan koneksi ke server.",
+        message: "Login Berhasil! Selamat datang ${usernameInput.text}",
+        isSuccess: true,
+      );
+    } else {
+      _showFeedback(
+        message: result.message ?? "Login Gagal",
         isSuccess: false,
       );
     }
   }
 
   void _showFeedback({required String message, required bool isSuccess}) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Tutup snackbar lama jika ada
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -63,7 +51,6 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    // Pastikan Provider sudah terpasang di main.dart
     final authController = Provider.of<AuthController>(context);
 
     return Scaffold(
@@ -86,8 +73,9 @@ class _LoginState extends State<Login> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: authController.isLoading 
-                      ? null 
+                  onPressed:
+                  authController.isLoading
+                      ? null
                       : () => handleLogin(authController),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
